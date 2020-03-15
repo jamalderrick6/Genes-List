@@ -4,8 +4,9 @@ import csv
 import requests
 from lxml import html
 base_url = 'https://ghr.nlm.nih.gov'
-fieldnames = ['INITIAL', 'GENE NAME', 'NORMAL FUNCTION', 'HEALTH CONDITIONS RELATED TO GENETIC CHANGE']
+fieldnames = ['INDEX', 'INITIAL', 'GENE NAME', 'NORMAL FUNCTION', 'HEALTH CONDITIONS RELATED TO GENETIC CHANGE']
 target_url = 'https://ghr.nlm.nih.gov/gene'
+count = 0
 output = []
 #scrape out the letters of genes from the main page
 response = requests.get(target_url)
@@ -22,6 +23,7 @@ for letter_url in letters_url:
 
     genes_list_url = list_doc.xpath('//*[@id="skip"]//ul[@class = "browse-results"]/li/a/@href')
     for gene_url in genes_list_url:
+        count = count + 1
         gene = base_url + gene_url
         gene_response = requests.get(gene)
         gene_content = gene_response.content
@@ -31,7 +33,7 @@ for letter_url in letters_url:
         gene_name = ''.join(gene_doc.xpath('.//*[@id="skip"]//h2[@class = "gene-full-name"]/text()'))
         normal_function = ''.join(gene_doc.xpath('normalize-space(string(.//div[@class="col-md-8"]/div))'))
         health_conditions = ''.join(gene_doc.xpath('normalize-space(string(.//div[@class="sub-section-ec-area"]/section))')).replace('More About This Health Condition','')
-        values = [gene_initial, gene_name, normal_function, health_conditions]
+        values = [count, gene_initial, gene_name, normal_function, health_conditions]
         resp = dict(zip(fieldnames, values))
         output.append(resp)
     # print(output)
